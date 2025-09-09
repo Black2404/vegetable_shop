@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\FeedBackController;
 
 // Trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -78,3 +79,4 @@ Route::get('/chatbot', function () {
 // API chatbot
 Route::post('/chatbot', [ChatbotController::class, 'chat']);
 
+Route::post('/feedback', [FeedBackController::class, 'store'])->name('feedback.store');

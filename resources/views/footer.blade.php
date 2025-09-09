@@ -13,18 +13,20 @@
             </div>
             <div class="col-md-4">
                 <h5 style="color: #4b4b32;">Viết đánh giá</h5>
-                <form>
+                <form action="{{ route('feedback.store') }}" method="POST">
+                    @csrf
                     <div class="mb-2">
-                        <input type="text" class="form-control" placeholder="Tên" required>
+                        <input type="text" class="form-control" name="name" placeholder="Tên" value="{{ old('name') }}" required>
                     </div>
                     <div class="mb-2">
-                        <input type="email" class="form-control" placeholder="Email" required>
+                        <input type="email" class="form-control" name="email" placeholder="Email" value="{{ old('email') }}" required>
                     </div>
                     <div class="mb-2">
-                        <textarea class="form-control" rows="3" placeholder="Viết đánh giá của bạn" required></textarea>
+                        <textarea class="form-control" name="message" rows="3" placeholder="Viết đánh giá của bạn" required>{{ old('content') }}</textarea>
                     </div>
                     <button type="submit" class="btn" style="background-color: #7d7d52; color: white; width: 100%;">Gửi đánh giá</button>
                 </form>
+
             </div>
         
 </footer>
