@@ -56,7 +56,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('register.post') }}">
+            <form method="POST" action="/register">
                 @csrf
 
                 <div class="mb-3">
@@ -104,7 +104,7 @@
                 <button type="submit" class="btn btn-register w-100">Đăng ký</button>
 
                 <div class="text-center mt-3">
-                    <a href="{{ route('login') }}" class="text-decoration-none" style="color: #6d6a4b;">Đã có tài khoản? Đăng nhập</a>
+                    <a href="/login" class="text-decoration-none" style="color: #6d6a4b;">Đã có tài khoản? Đăng nhập</a>
                 </div>
             </form>
         </div>

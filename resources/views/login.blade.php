@@ -51,7 +51,7 @@
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
-            <form method="POST" action="{{ route('login.post') }}">
+            <form method="POST" action="/login">
                 @csrf
                 <div class="mb-3">
                     <label for="email" class="form-label">Email:</label>
@@ -66,7 +66,7 @@
                 <button type="submit" class="btn btn-login w-100">Đăng nhập</button>
 
                 <div class="text-center mt-3">
-                    <a href="{{ route('register') }}" class="text-decoration-none" style="color: #6d6a4b;">Chưa có tài khoản? Đăng ký</a>
+                    <a href="/register" class="text-decoration-none" style="color: #6d6a4b;">Chưa có tài khoản? Đăng ký</a>
                 </div>
             </form>
         </div>

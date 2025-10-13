@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -28,26 +29,18 @@ class ChatbotController extends Controller
             }
         }
 
-        // Bước 1: Rule-based check trước
+        // Rule-based logic
         if ($this->isProductQuestion($message)) {
             $ruleReply = $this->handleProductQuery($message);
-            if ($ruleReply) {
-                return $ruleReply;
-            }
+            if ($ruleReply) return $ruleReply;
         }
 
-        // Bước 2: Nếu rule không tìm thấy → nhờ Gemini extract keyword
+        // Nhờ Gemini trích keyword
         $keyword = $this->extractKeyword($message);
-
         if ($keyword !== "unknown") {
-            $product = DB::table('products')
-                ->where('name', 'LIKE', '%' . $keyword . '%')
-                ->first();
-
+            $product = DB::table('products')->where('name', 'LIKE', "%$keyword%")->first();
             if ($product) {
-                // Lưu context
                 session(['last_product_id' => $product->id]);
-
                 return response()->json([
                     'reply' => "Có phải bạn đang quan tâm tới <b>{$product->name}</b>?<br>
                                 Giá: " . number_format($product->price, 0) . " VNĐ.<br>
@@ -56,7 +49,7 @@ class ChatbotController extends Controller
             }
         }
 
-        // Bước 3: Nếu vẫn không có → để Gemini trả lời tự do
+        // Cuối cùng để Gemini trả lời tự do
         return $this->askGemini($message);
     }
 
@@ -64,35 +57,32 @@ class ChatbotController extends Controller
     {
         $keywords = ['sản phẩm', 'giá', 'bao nhiêu', 'còn hàng', 'loại', 'công dụng', 'xem chi tiết', 'thông tin', 'danh sách'];
         foreach ($keywords as $word) {
-            if (stripos($message, $word) !== false) {
-                return true;
-            }
+            if (stripos($message, $word) !== false) return true;
         }
 
-        $exists = DB::table('products')->where('name', 'LIKE', '%' . $message . '%')->exists();
-        return $exists;
+        return DB::table('products')->where('name', 'LIKE', "%$message%")->exists();
     }
 
     private function handleProductQuery($message)
     {
         $msg = mb_strtolower(trim($message));
 
-        // 1. Tổng số sản phẩm
+        // Tổng số sản phẩm
         if (str_contains($msg, 'bao nhiêu sản phẩm') || str_contains($msg, 'tổng sản phẩm')) {
             $count = DB::table('products')->count();
             return response()->json(['reply' => "Hiện tại cửa hàng có $count sản phẩm."]);
         }
 
-        // 2. Danh sách sản phẩm
+        // Danh sách sản phẩm
         if (str_contains($msg, 'danh sách sản phẩm') || str_contains($msg, 'có những sản phẩm nào')) {
             $products = DB::table('products')->pluck('name')->toArray();
             if ($products) {
-                return response()->json(['reply' => "Danh sách sản phẩm:<br>" . implode("<br>", $products)]);
+                return response()->json(['reply' => "Danh sách sản phẩm:<br>" . implode('<br>', $products)]);
             }
             return response()->json(['reply' => "Hiện tại chưa có sản phẩm nào."]);
         }
 
-        // 3. Giá sản phẩm
+        // Giá sản phẩm
         if (str_contains($msg, 'giá') || str_contains($msg, 'bao nhiêu tiền') || str_contains($msg, 'mấy tiền')) {
             $keyword = trim(str_ireplace(['giá', 'bao nhiêu tiền', 'mấy tiền'], '', $msg));
             if ($keyword) {
@@ -107,16 +97,15 @@ class ChatbotController extends Controller
             }
         }
 
-        // 4. Công dụng/thông tin
-        if (str_contains($msg, 'công dụng') || str_contains($msg, 'xem chi tiết') || str_contains($msg, 'thông tin')) {
-            $keyword = trim(str_ireplace(['công dụng', 'xem chi tiết', 'thông tin'], '', $msg));
+        // Công dụng hoặc thông tin sản phẩm
+        if (str_contains($msg, 'công dụng') || str_contains($msg, 'thông tin') || str_contains($msg, 'xem chi tiết')) {
+            $keyword = trim(str_ireplace(['công dụng', 'thông tin', 'xem chi tiết'], '', $msg));
             if ($keyword) {
                 $products = DB::table('products')->where('name', 'LIKE', "%$keyword%")->get();
                 if ($products->count()) {
                     $reply = "Thông tin sản phẩm:<br>";
                     foreach ($products as $p) {
                         $reply .= "<b>{$p->name}</b>: {$p->description}<br>";
-                        // lưu sản phẩm cuối cùng vào session
                         session(['last_product_id' => $p->id]);
                     }
                     return response()->json(['reply' => $reply]);
@@ -124,13 +113,11 @@ class ChatbotController extends Controller
             }
         }
 
-        // 5. Người dùng chỉ gõ tên sản phẩm
+        // Gõ trực tiếp tên sản phẩm
         $product = DB::table('products')->where('name', 'LIKE', "%$msg%")->first();
         if ($product) {
             session(['last_product_id' => $product->id]);
-            return response()->json([
-                'reply' => "Bạn muốn xem chi tiết sản phẩm <b>{$product->name}</b> không?"
-            ]);
+            return response()->json(['reply' => "Bạn muốn xem chi tiết sản phẩm <b>{$product->name}</b> không?"]);
         }
 
         return null;
@@ -140,23 +127,19 @@ class ChatbotController extends Controller
     {
         try {
             $res = Http::post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . env("GEMINI_API_KEY"),
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . env('GEMINI_API_KEY'),
                 [
-                    "contents" => [[
-                        "parts" => [[
-                            "text" => "Đọc câu hỏi: \"$message\"\n
-                            Trích duy nhất tên sản phẩm chính (1-2 từ).\n
-                            Nếu không thấy sản phẩm thì trả lời: unknown."
+                    'contents' => [[
+                        'parts' => [[
+                            'text' => "Đọc câu hỏi: \"$message\"\nTrích duy nhất tên sản phẩm chính (1-2 từ).\nNếu không thấy sản phẩm thì trả lời: unknown."
                         ]]
                     ]]
                 ]
             );
-
             $data = $res->json();
-            $keyword = strtolower(trim($data["candidates"][0]["content"]["parts"][0]["text"] ?? "unknown"));
-            return $keyword;
+            return strtolower(trim($data['candidates'][0]['content']['parts'][0]['text'] ?? 'unknown'));
         } catch (\Exception $e) {
-            return "unknown";
+            return 'unknown';
         }
     }
 
@@ -164,19 +147,16 @@ class ChatbotController extends Controller
     {
         try {
             $res = Http::post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . env("GEMINI_API_KEY"),
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . env('GEMINI_API_KEY'),
                 [
-                    "contents" => [[
-                        "parts" => [[ "text" => $message ]]
-                    ]]
+                    'contents' => [[ 'parts' => [[ 'text' => $message ]] ]]
                 ]
             );
-
             $data = $res->json();
-            $reply = $data["candidates"][0]["content"]["parts"][0]["text"] ?? "Xin lỗi, tôi chưa hiểu.";
+            $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Xin lỗi, tôi chưa hiểu.';
             return response()->json(['reply' => $reply]);
         } catch (\Exception $e) {
-            return response()->json(['reply' => "Lỗi gọi Gemini: " . $e->getMessage()]);
+            return response()->json(['reply' => 'Lỗi kết nối Gemini: ' . $e->getMessage()]);
         }
     }
 }

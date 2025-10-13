@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Rau Củ Quả | Sản phẩm</title>
-    <link rel="icon" href="{{ asset('images/logo.jpg') }}" >
+    <link rel="icon" href="{{ asset('images/logo.jpg') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <!-- Bootstrap & Icons & Font -->
@@ -29,7 +29,6 @@
             border-color: #6d6a4b;
             color: #4b4b32;
         }
-
         .pagination .page-link {
             color: #6d6a4b;
             border: 1px solid #6d6a4b;
@@ -48,72 +47,72 @@
 </head>
 <body>
 
-    @include('header')
+@include('header')
 
-    <div class="container my-5">
+<div class="container my-5" >
+    <h2 class="text-center mb-4" style="color: #4b4b32;">Tất cả sản phẩm</h2>
 
-        <h2 class="text-center mb-4" style="color: #4b4b32;">Tất cả sản phẩm</h2>
-
-        <!-- BỘ LỌC THEO GIÁ & TÌM KIẾM -->
-        <form action="{{ route('products.search') }}" method="GET" class="search-bar">
-            <div class="row g-3 align-items-end justify-content-center">
-
-                <!-- Từ khóa -->
-                <div class="col-md-6">
-                    <input 
-                        type="text" 
-                        name="keyword" 
-                        class="form-control" 
-                        style="background-color: white; border-color: #6d6a4b; color: #4b4b32;" 
-                        placeholder="Tìm kiếm sản phẩm..." 
-                        value="{{ request('keyword') }}">
-                </div>
-
-                <!-- Giá -->
-                <div class="col-md-3">
-                    <select name="price_range" class="form-select filter-select">
-                        <option value="">-- Khoảng giá --</option>
-                        <option value="1" {{ request('price_range') == '1' ? 'selected' : '' }}>Dưới 50.000đ</option>
-                        <option value="2" {{ request('price_range') == '2' ? 'selected' : '' }}>50.000 - 100.000đ</option>
-                        <option value="3" {{ request('price_range') == '3' ? 'selected' : '' }}>Trên 100.000đ</option>
-                    </select>
-                </div>
-
-                <!-- Nút -->
-                <div class="col-md-2">
-                    <button type="submit" class="btn w-100" style="background-color: #6d6a4b; color: white;">
-                        <i class="bi bi-search"></i> Tìm
-                    </button>
-                </div>
+    <!-- FORM TÌM KIẾM -->
+    <form action="/products" method="GET" class="search-bar">
+        <div class="row g-3 align-items-end justify-content-center">
+            <div class="col-md-6">
+                <input type="text" name="keyword" class="form-control"
+                       placeholder="Tìm kiếm sản phẩm..." value="{{ request('keyword') }}">
             </div>
-        </form>
 
-        <!-- DANH SÁCH SẢN PHẨM -->
-        <div class="row g-4 mt-3">
-            @forelse ($products as $product)
-                <div class="col-md-4">
-                    <div class="card product-card h-100">
-                        <img src="{{ asset('images/' . $product->image) }}" class="card-img-top" alt="{{ $product->name }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $product->name }}</h5>
-                            <p class="card-text text-danger">Giá: {{ number_format($product->price) }} VNĐ</p>
-                            <a href="/product/{{ $product->id }}" class="btn btn-sm btn-success">Xem chi tiết</a>
-                        </div>
+            <div class="col-md-3">
+                <select name="price_range" class="form-select filter-select">
+                    <option value="">-- Khoảng giá --</option>
+                    <option value="1" {{ request('price_range') == '1' ? 'selected' : '' }}>Dưới 50.000đ</option>
+                    <option value="2" {{ request('price_range') == '2' ? 'selected' : '' }}>50.000 - 100.000đ</option>
+                    <option value="3" {{ request('price_range') == '3' ? 'selected' : '' }}>Trên 100.000đ</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn w-100" style="background-color: #6d6a4b; color: white;">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- DANH SÁCH SẢN PHẨM -->
+    <div class="row g-4 mt-3">
+        @forelse ($products['data'] ?? [] as $product)
+            <div class="col-md-4">
+                <div class="card product-card h-100">
+                    <img src="{{ asset('images/' . ($product['image'] ?? 'no-image.jpg')) }}" 
+                         class="card-img-top" alt="{{ $product['name'] ?? 'Sản phẩm' }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $product['name'] ?? 'Sản phẩm' }}</h5>
+                        <p class="card-text text-danger">Giá: {{ number_format($product['price'] ?? 0) }} VNĐ</p>
+                        <a href="/product/{{ $product['id'] }}" class="btn btn-sm btn-success">Xem chi tiết</a>
                     </div>
                 </div>
-            @empty
-                <p class="text-center mt-4">Không tìm thấy sản phẩm nào.</p>
-            @endforelse
-        </div>
-
-        <!-- PHÂN TRANG -->
-        <div class="mt-4 d-flex justify-content-center">
-            {{ $products->withQueryString()->links() }}
-        </div>
+            </div>
+        @empty
+            <p class="text-center mt-4">Không tìm thấy sản phẩm nào.</p>
+        @endforelse
     </div>
 
-    @include('footer')
+    <!-- PHÂN TRANG -->
+    @if(!empty($products['last_page']) && $products['last_page'] > 1)
+        <nav class="mt-4 d-flex justify-content-center">
+            <ul class="pagination">
+                @for ($i = 1; $i <= $products['last_page']; $i++)
+                    <li class="page-item {{ ($products['current_page'] ?? 1) == $i ? 'active' : '' }}">
+                        <a class="page-link" href="{{ request()->fullUrlWithQuery(['page' => $i]) }}">{{ $i }}</a>
+                    </li>
+                @endfor
+            </ul>
+        </nav>
+    @endif
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+@include('footer')
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

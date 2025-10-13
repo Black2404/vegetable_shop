@@ -3,26 +3,46 @@
 <head>
     <title>Rau củ Quả | Quản lý đơn hàng</title>
     <link rel="icon" href="{{ asset('images/logo.jpg') }}" >
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Playfair Display', serif; padding-top: 80px; }
-        h2 { text-align: center; color: #4b4b32; margin-bottom: 20px; margin-top: 20px;}
-        table { background-color: white; }
-        .pagination .page-link {
-            color: #6d6a4b;
-            border: 1px solid #6d6a4b;
-            background-color: #fff;
-        }
-        .pagination .page-item.active .page-link {
-            background-color: #6d6a4b;
-            border-color: #6d6a4b;
-            color: #fff;
-        }
-        .pagination .page-link:hover {
-            background-color: #c7c6aa;
-            color: #333;
-        }
-    </style>
+    body { font-family: 'Playfair Display', serif; padding-top: 80px; }
+    h2 { text-align: center; color: #4b4b32; margin-bottom: 20px; margin-top: 20px;}
+    table { 
+        background-color: white; 
+        table-layout: fixed; /* quan trọng để cố định cột */
+        width: 100%;
+    }
+    th, td {
+        text-align: center; 
+        vertical-align: middle;
+        word-break: break-word; /* xuống dòng nếu dài */
+    }
+    th:nth-child(1), td:nth-child(1) { width: 5%; }   /* ID */
+    th:nth-child(2), td:nth-child(2) { width: 10%; }  /* Người mua */
+    th:nth-child(3), td:nth-child(3) { width: 35%; }  /* Sản phẩm */
+    th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Tổng tiền */
+    th:nth-child(5), td:nth-child(5) { width: 10%; }  /* Trạng thái */
+    th:nth-child(6), td:nth-child(6) { width: 15%; }  /* Ngày đặt */
+    th:nth-child(7), td:nth-child(7) { width: 15%; }  /* Hành động */
+
+    .pagination .page-link {
+        color: #6d6a4b;
+        border: 1px solid #6d6a4b;
+        background-color: #fff;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #6d6a4b;
+        border-color: #6d6a4b;
+        color: #fff;
+    }
+    .pagination .page-link:hover {
+        background-color: #c7c6aa;
+        color: #333;
+    }
+</style>
+
 </head>
 <body>
     @include('admin/header')

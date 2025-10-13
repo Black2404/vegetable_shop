@@ -12,6 +12,7 @@
                 <li class="nav-item"><a class="nav-link" href="{{ route('admin.users') }}">Người dùng</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('admin.products') }}">Sản phẩm</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('admin.orders') }}">Đơn hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.feedbacks')}}">Phản hồi</a> </li>
                 <li class="nav-item">
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
@@ -34,8 +35,6 @@
         }
         .nav-link {
             color: #3c3c28 !important;
-            font-size: 1.1rem;
-            font-weight: 500;
         }
         .nav-link:hover {
             color: #7d7d52 !important;

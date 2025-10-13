@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Chatbot</title>
     <style>
         /* Nút mở chatbot */
@@ -110,6 +111,21 @@
         #chat-send:hover {
             background: #5a5940;
         }
+
+        /* Hiệu ứng “đang gõ...” */
+        .typing {
+            display: inline-block;
+        }
+        .typing::after {
+            content: '...';
+            animation: dots 1.5s steps(3, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
     </style>
 </head>
 <body>
@@ -150,26 +166,40 @@
         let msg = input.value.trim();
 
         if (msg !== "") {
+            // Hiển thị tin nhắn người dùng
             body.innerHTML += `<div class="user-msg">${msg}</div>`;
             input.value = "";
             body.scrollTop = body.scrollHeight;
 
+            // Thêm hiệu ứng “...”
+            const typingEl = document.createElement('div');
+            typingEl.classList.add('bot-msg');
+            typingEl.innerHTML = `<i><span class="typing"></span></i>`;
+            body.appendChild(typingEl);
+            body.scrollTop = body.scrollHeight;
+
             try {
-                let response = await fetch("/chatbot", {
+                let response = await fetch("{{ url('/chatbot') }}", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        "X-CSRF-TOKEN": document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content')
                     },
                     body: JSON.stringify({ message: msg })
                 });
 
                 let data = await response.json();
                 let reply = data.reply ?? "Bot chưa hiểu.";
+
+                // Xóa hiệu ứng typing
+                typingEl.remove();
+
+                // Thêm tin nhắn trả lời
                 body.innerHTML += `<div class="bot-msg">${reply}</div>`;
                 body.scrollTop = body.scrollHeight;
 
             } catch (e) {
+                typingEl.remove();
                 body.innerHTML += `<div class="bot-msg">Lỗi kết nối server.</div>`;
             }
         }

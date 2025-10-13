@@ -12,6 +12,7 @@
                 <p><strong>Thứ 7 - Chủ nhật:</strong><br>8:00 - 20:00</p>
             </div>
             <div class="col-md-4">
+                
                 <h5 style="color: #4b4b32;">Viết đánh giá</h5>
                 <form action="{{ route('feedback.store') }}" method="POST">
                     @csrf
@@ -22,7 +23,7 @@
                         <input type="email" class="form-control" name="email" placeholder="Email" value="{{ old('email') }}" required>
                     </div>
                     <div class="mb-2">
-                        <textarea class="form-control" name="message" rows="3" placeholder="Viết đánh giá của bạn" required>{{ old('content') }}</textarea>
+                        <textarea class="form-control" name="message" rows="3" placeholder="Viết đánh giá của bạn" required>{{ old('message') }}</textarea>
                     </div>
                     <button type="submit" class="btn" style="background-color: #7d7d52; color: white; width: 100%;">Gửi đánh giá</button>
                 </form>

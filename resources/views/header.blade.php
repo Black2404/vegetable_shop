@@ -1,7 +1,37 @@
+@php
+    use Illuminate\Support\Facades\Http;
+
+    $user = session('user'); 
+    $cartCount = 0;
+
+    if ($user && session('token')) {
+        try {
+            $response = Http::withToken(session('token'))->get(env('API_URL') . '/cart');
+            if ($response->successful()) {
+                $cart = $response->json();
+
+                if (!empty($cart)) {
+                    // Nếu API trả về {"items": [...]}
+                    if (isset($cart['items']) && is_array($cart['items'])) {
+                        $cartCount = array_sum(array_column($cart['items'], 'quantity'));
+                    } 
+                    // Nếu API trả về mảng trực tiếp [...]
+                    elseif (is_array($cart)) {
+                        $cartCount = array_sum(array_column($cart, 'quantity'));
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            $cartCount = 0;
+        }
+    }
+@endphp
+
+
+
 <nav class="navbar navbar-expand-lg shadow-sm fixed-top" style="background-color: #f2efec;">
     <div class="container">
         <a class="navbar-brand" href="/">Rau Củ Quả</a>
-        
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -11,46 +41,39 @@
                 <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
                 <li class="nav-item"><a class="nav-link" href="/products">Sản phẩm</a></li>
 
-        @auth
-        <!-- Nếu đã đăng nhập -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                {{ Auth::user()->name }}
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{ route('profile') }}">Thông tin cá nhân</a></li>
-                <li>
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button class="dropdown-item text-danger">Đăng xuất</button>
-                    </form>
-                </li>
-            </ul>
-        </li>
-        @else
-        <!-- Nếu chưa đăng nhập -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="guestDropdown" role="button" data-bs-toggle="dropdown">Tính năng</a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{ route('login') }}">Đăng nhập</a></li>
-                <li><a class="dropdown-item" href="{{ route('register') }}">Đăng ký</a></li>
-            </ul>
-        </li>
-        @endauth
+                @if($user)
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            {{ $user['name'] }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('profile.show') }}">Thông tin cá nhân</a></li>
+                            <li>
+                                <form action="/logout" method="POST">
+                                    @csrf
+                                    <button class="dropdown-item text-danger">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders">
+                            <i class="bi bi-receipt"></i>
+                        </a>
+                    </li>
+                @else
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="guestDropdown" role="button" data-bs-toggle="dropdown">Tính năng</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/login">Đăng nhập</a></li>
+                            <li><a class="dropdown-item" href="/register">Đăng ký</a></li>
+                        </ul>
+                    </li>
+                @endif
+
                 <li class="nav-item ms-3">
                     <a class="nav-link cart-icon" href="/cart">
                         <i class="bi bi-cart3"></i>
-                        @php
-                            use App\Models\Cart;
-
-                            if (auth()->check()) {
-                                $cart = Cart::where('user_id', auth()->id())->first();
-                                $cartCount = $cart ? $cart->items()->sum('quantity') : 0;
-                            } else {
-                                $cartCount = 0;
-                            }
-                        @endphp
-
                         <span class="cart-badge">{{ $cartCount }}</span>
                     </a>
                 </li>
@@ -58,6 +81,7 @@
         </div>
     </div>
 </nav>
+
 
 <style>
     body {
@@ -72,7 +96,6 @@
     }
     .nav-link {
         color: #3c3c28 !important;
-        
     }
     .nav-link:hover {
         color: #7d7d52 !important;
