@@ -10,16 +10,17 @@ use Illuminate\Support\Facades\Hash;
 class AdminUserController extends Controller
 {
     // Danh sách người dùng
-    public function index()
-    {
-        $users = User::where('role', '!=', 'admin')->orderBy('id', 'desc')->paginate(6);
+    public function index(Request $request)
+        {
+            $users = User::where('role', '!=', 'admin')
+                        ->orderBy('id', 'desc')
+                        ->paginate(6); // mỗi trang 6 người
 
-        return response()->json([
-            'status' => true,
-            'data' => $users,
-        ]);
-    }
-
+            return response()->json([
+                'status' => true,
+                'data'   => $users,
+            ]);
+        }
     // Thêm người dùng mới
     public function store(Request $request)
     {

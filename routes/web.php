@@ -75,8 +75,8 @@ Route::get('/orders/{id}/edit', [AdminOrderPageController::class, 'edit'])->name
 Route::put('/orders/{id}', [AdminOrderPageController::class, 'update'])->name('admin.orders.update');
 Route::delete('admin/orders/{id}', [AdminOrderPageController::class, 'destroy'])->name('admin.orders.delete');
     //Admin.feedbacks
-Route::get('admin/feedback', [AdminFeedbackPageController::class, 'index'])->name('admin.feedbacks');
-Route::delete('admin/feedback/{id}', [AdminFeedbackPageController::class, 'destroy'])->name('admin.destroy');
+Route::get('admin/feedbacks', [AdminFeedbackPageController::class, 'index'])->name('admin.feedbacks');
+Route::delete('/feedbacks/{id}', [AdminFeedbackPageController::class, 'destroy'])->name('admin.destroy');
 
 // Chatbot
 use App\Http\Controllers\Api\ChatbotController;

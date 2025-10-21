@@ -9,19 +9,13 @@ use App\Models\Product;
 class AdminProductController extends Controller
 {
     // Danh sách sản phẩm (có phân trang)
-    public function index()
+    public function index(Request $request)
     {
         $products = Product::orderBy('id', 'desc')->paginate(3);
 
         return response()->json([
             'status' => true,
-            'data' => $products->items(),
-            'pagination' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-            ]
+            'data'   => $products, // 
         ]);
     }
 

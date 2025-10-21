@@ -6,13 +6,37 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Product;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AdminProductPageController extends Controller
 {
     // Trang danh sách sản phẩm (có phân trang)
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::orderBy('created_at', 'desc')->paginate(3);
+        $token = session('token');
+        $page  = $request->query('page', 1);
+
+        // Gọi API thật
+        $response = Http::withToken($token)
+                        ->get(env('API_URL') . '/admin/products?page=' . $page);
+
+        if (!$response->successful()) {
+            return back()->with('error', 'Không thể lấy danh sách sản phẩm!');
+        }
+
+        $data = $response->json()['data']; // dữ liệu phân trang
+        $productsArray = $data['data'];    // danh sách sản phẩm
+
+        $products = new LengthAwarePaginator(
+            $productsArray,
+            $data['total'],
+            $data['per_page'],
+            $data['current_page'],
+            [
+                'path'  => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
 
         return view('admin.products', compact('products'));
     }

@@ -12,9 +12,18 @@ class AdminOrderController extends Controller
     {
         $orders = Order::with(['user', 'items.product'])
                         ->orderBy('created_at', 'desc')
-                        ->get();
+                        ->paginate(8);
 
-        return response()->json($orders);
+        return response()->json([
+            'status' => true,
+            'data' => $orders->items(),
+            'pagination' => [
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'per_page' => $orders->perPage(),
+                'total' => $orders->total(),
+            ],
+        ]);
     }
 
     // Xem chi tiết đơn hàng

@@ -28,13 +28,13 @@ class FeedBackController extends Controller
 
 
     // Nếu muốn lấy danh sách feedback
-    public function index()
+    public function index(Request $request)
     {
-        $feedbacks = FeedBack::latest()->get();
+        $feedbacks = Feedback::orderBy('created_at', 'desc')->paginate(10);
 
         return response()->json([
             'status' => true,
-            'data' => $feedbacks
+            'data'   => $feedbacks,
         ]);
     }
 }

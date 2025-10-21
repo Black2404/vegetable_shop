@@ -6,18 +6,43 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AdminUserPageController extends Controller
 {
     // Danh sách người dùng
-    public function index()
+
+    public function index(Request $request)
     {
-        $users = User::where('role', '!=', 'admin')
-                    ->orderBy('id', 'desc')
-                    ->paginate(6);
+        $token = session('token'); // nếu có JWT hoặc Bearer token
+        $page = $request->query('page', 1);
+
+        // Gọi API (backend thật)
+        $response = Http::withToken($token)
+                        ->get(env('API_URL') . '/admin/users?page=' . $page);
+
+        if (!$response->successful()) {
+            return back()->with('error', 'Không thể lấy danh sách người dùng!');
+        }
+
+        $data = $response->json()['data']; // lấy phần "data" từ JSON
+        $usersArray = $data['data'];       // danh sách người dùng
+
+        // ⚙ Tạo paginator từ dữ liệu API
+        $users = new LengthAwarePaginator(
+            $usersArray,                  // dữ liệu người dùng hiện tại
+            $data['total'],               // tổng số người dùng
+            $data['per_page'],            // số người mỗi trang
+            $data['current_page'],        // trang hiện tại
+            [
+                'path'  => $request->url(), 
+                'query' => $request->query() // để giữ query string ?page=...
+            ]
+        );
 
         return view('admin.users', compact('users'));
     }
+
 
     // Thêm người dùng
     public function store(Request $request)

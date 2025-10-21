@@ -25,13 +25,13 @@ class AdminPageController extends Controller
         $url = env('API_URL') . '/admin/dashboard';
         $response = Http::withToken($token)->get($url);
 
-        // Debug lỗi
-        \Log::info('Admin dashboard API', [
-            'url' => $url,
-            'status' => $response->status(),
-            'body' => $response->body(),
-            'token' => $token ? 'yes' : 'no',
-        ]);
+        // // Debug lỗi
+        // \Log::info('Admin dashboard API', [
+        //     'url' => $url,
+        //     'status' => $response->status(),
+        //     'body' => $response->body(),
+        //     'token' => $token ? 'yes' : 'no',
+        // ]);
 
         if ($response->successful()) {
             $data = $response->json();

@@ -60,8 +60,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/dashboard', [AdminController::class, 'dashboard']);
 
     // Quản lý người dùng
-    Route::get('users', [AdminUserController::class, 'index']);
         // Danh sách
+    Route::get('users', [AdminUserController::class, 'index']);
+        // Thêm
     Route::post('users', [AdminUserController::class, 'store']);
         // Xóa
     Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
@@ -85,8 +86,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::delete('/orders/{id}', [AdminOrderController::class, 'destroy']);
 
     // // Quản lý phản hồi
-    Route::get('/feedbacks', [FeedbackController::class, 'apiIndex']);
-    Route::delete('/feedbacks/{id}', [FeedbackController::class, 'apiDestroy']);
+    Route::get('/feedbacks', [AdminFeedbackController::class, 'index']);
+    Route::delete('/feedbacks/{id}', [AdminFeedbackController::class, 'destroy']);
 });
 
 // Chatbot
