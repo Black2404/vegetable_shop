@@ -3,4 +3,5 @@
 ### Công nghệ sử dụng:
 - Frontend: HTML/CSS, Bootstrap
 - Backend: PHP framework Laravel
-- Cơ sở dữ liệu: MySQL 
+- Cơ sở dữ liệu: MySQL
+- RESTful API
