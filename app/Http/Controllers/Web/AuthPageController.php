@@ -37,34 +37,29 @@ class AuthPageController extends Controller
 
     public function login(Request $request)
 {
-    $response = Http::post(env('API_URL') . '/login', [
-        'email' => $request->email,
-        'password' => $request->password,
-    ]);
+    try {
+        $response = Http::timeout(5)->post(env('API_URL') . '/login', [
+            'email'    => $request->email,
+            'password' => $request->password,
+        ]);
 
-    if ($response->successful()) {
-    $data = $response->json();
+        if ($response->successful()) {
+            $data = $response->json();
+            session(['token' => $data['token'], 'user' => $data['user']]);
+            return $data['user']['role'] === 'admin'
+                ? redirect()->route('admin.dashboard')
+                : redirect()->route('home');
+        }
 
-    // Log dữ liệu trả về để debug
-    logger($data);
+        return back()->with('error', in_array($response->status(), [401, 422])
+            ? 'Sai tài khoản hoặc mật khẩu!'
+            : 'Đăng nhập thất bại. Máy chủ API lỗi!');
 
-    // Lưu token và user vào session
-    session([
-        'token' => $data['token'],
-        'user'  => $data['user'],
-    ]);
-
-    // Kiểm tra role để chuyển hướng đúng
-    if ($data['user']['role'] === 'admin') {
-        return redirect()->route('admin.dashboard');
-    } else {
-        return redirect()->route('home');
+    } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        return back()->with('error', 'Không thể kết nối đến API! Vui lòng thử lại sau.');
+    } catch (\Exception $e) {
+        return back()->with('error', 'Đã xảy ra lỗi không xác định.');
     }
-}
-
-
-
-    return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
 }
 
     public function showRegister()
@@ -72,20 +67,57 @@ class AuthPageController extends Controller
         return view('register'); 
     }
 
-    public function register(Request $request)
+
+public function register(Request $request)
 {
-    $response = Http::post(env('API_URL') . '/register', [
-        'name'     => $request->name,
-        'email'    => $request->email,
-        'password' => $request->password,
+    $request->validate([
+        'name' => 'required|string',
+        'email' => 'required|email',
+        'password' => 'required|string|min:6|confirmed',
     ]);
 
-    if ($response->successful()) {
-        return redirect('/login')->with('success', 'Đăng ký thành công! Vui lòng đăng nhập.');
-    }
+    try {
+        $payload = $request->only('name', 'email', 'password', 'password_confirmation');
 
-    return back()->with('error', 'Đăng ký thất bại, vui lòng thử lại.');
+        $response = Http::timeout(10)->post(env('API_URL') . '/register', $payload);
+
+        $status = $response->status();
+        $json = $response->json() ?? [];
+
+        // Thành công
+        if (in_array($status, [200, 201]) && !empty($json['status']) && $json['status'] === true) {
+            return redirect('/login')->with('success', $json['message'] ?? 'Đăng ký thành công!');
+        }
+
+        // Lỗi validation
+        if ($status === 422) {
+            $errors = $json['errors'] ?? [];
+            if (!empty($errors)) {
+                $firstKey = array_key_first($errors);
+                $message = $errors[$firstKey][0] ?? 'Dữ liệu không hợp lệ';
+            } elseif (!empty($json['message'])) {
+                $message = $json['message'];
+            } else {
+                $message = 'Dữ liệu không hợp lệ';
+            }
+
+            return redirect('/register')->withInput()->with('error', $message);
+        }
+
+        // Lỗi khác
+        $apiMessage = $json['message'] ?? 'Đăng ký thất bại. Máy chủ API lỗi!';
+        return redirect('/register')->withInput()->with('error', $apiMessage);
+
+    } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        return redirect('/register')->withInput()->with('error', 'Không thể kết nối tới máy chủ API. Vui lòng thử lại sau.');
+    } catch (\Exception $e) {
+        \Log::error('❌ API Register Unexpected Error: ' . $e->getMessage());
+        \Log::error('Payload: ' . json_encode($payload));
+        return redirect('/register')->withInput()->with('error', 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.');
+    }
 }
+
+
 
 
     public function logout(Request $request)

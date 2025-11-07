@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\OrderItem;
 use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;

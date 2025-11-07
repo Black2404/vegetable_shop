@@ -22,11 +22,11 @@ Route::get('/product/{id}', [ProductController::class, 'show']);
 
 Route::get('/home', [AuthController::class, 'home']);
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
 // List review product
 Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
 //User
 Route::middleware('auth:sanctum')->group(function () {

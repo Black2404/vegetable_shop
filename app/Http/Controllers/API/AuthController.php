@@ -23,29 +23,41 @@ class AuthController extends Controller
 
     //Đăng ký
     public function register(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|string|min:6|confirmed', // 'confirmed' sẽ check password_confirmation
+    ], [
+        'email.unique' => 'Email đã tồn tại',
+        'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+        'password.confirmed' => 'Mật khẩu nhập lại không khớp',
+    ]);
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'user',
-        ]);
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
+    if ($validator->fails()) {
         return response()->json([
-            'message' => 'Đăng ký thành công',
-            'user'    => $user,
-            'token'   => $token,
-        ]);
-
+            'status' => false,
+            'message' => 'Validation lỗi',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role' => 'user',
+    ]);
+
+    $token = $user->createToken('api-token')->plainTextToken;
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Đăng ký thành công',
+        'user' => $user,
+        'token' => $token,
+    ], 201);
+}
 
     //Đăng nhập
     public function login(Request $request)
@@ -58,10 +70,12 @@ class AuthController extends Controller
         $user = User::where('email', $data['email'])->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Thông tin đăng nhập không chính xác'],
-            ]);
+            return response()->json([
+                'status'  => false,
+                'message' => 'Sai email hoặc mật khẩu!',
+            ], 401); // 401 Unauthorized
         }
+
 
         $token = $user->createToken('api-token')->plainTextToken;
 

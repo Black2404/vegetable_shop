@@ -14,7 +14,7 @@ class AdminController extends Controller
         // Đếm số lượng đơn hàng
         $totalOrders = Order::count();
 
-        // Tổng doanh thu (giả sử cột total_price trong bảng orders)
+        // Tổng doanh thu 
         $totalRevenue = Order::sum('total');
 
         // Đếm sản phẩm

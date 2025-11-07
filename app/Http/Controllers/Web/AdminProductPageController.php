@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
+
 
 class AdminProductPageController extends Controller
 {
@@ -41,29 +43,44 @@ class AdminProductPageController extends Controller
         return view('admin.products', compact('products'));
     }
     
-
     // Thêm sản phẩm
     public function store(Request $request)
-    {
-        $token = session('token');
+{
+    $request->validate([
+        'name'  => 'required|string|max:255',
+        'price' => 'required|numeric|min:0',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
-        $response = Http::withToken($token)
-            ->attach(
+    $token  = session('token');
+    $apiUrl = env('API_URL') . '/admin/products';
+
+    try {
+        $http = \Illuminate\Support\Facades\Http::withToken($token);
+
+        if ($request->hasFile('image')) {
+            $http = $http->attach(
                 'image',
-                $request->file('image'),
+                fopen($request->file('image')->getRealPath(), 'r'),
                 $request->file('image')->getClientOriginalName()
-            )
-            ->post(env('API_URL') . '/admin/products', [
-                'name'  => $request->name,
-                'price' => $request->price,
-            ]);
+            );
+        }
+
+        $response = $http->post($apiUrl, [
+            'name'  => $request->name,
+            'price' => $request->price,
+        ]);
 
         if ($response->successful()) {
             return redirect()->back()->with('success', 'Thêm sản phẩm thành công!');
         }
 
         return redirect()->back()->with('error', 'Thêm sản phẩm thất bại!');
+
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Không thể kết nối đến API!');
     }
+}
 
     // Trang sửa sản phẩm
     public function edit($id)

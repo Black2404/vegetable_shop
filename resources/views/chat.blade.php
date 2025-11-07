@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Chatbot</title>
+    <title>Chatbox</title>
     <style>
         /* Nút mở chatbot */
         #chatbot-toggle {
@@ -136,7 +136,7 @@
 <!-- Chatbox -->
 <div id="chatbox">
     <div id="chat-header">
-        <span>Chatbot</span>
+        <span>Chatbox</span>
         <button onclick="closeChat()">✖</button>
     </div>
     <div id="chat-body">

@@ -14,6 +14,7 @@ use App\Http\Controllers\Web\AdminProductPageController;
 use App\Http\Controllers\Web\AdminOrderPageController;
 use App\Http\Controllers\Web\AdminFeedbackPageController;
 use App\Http\Controllers\Web\ChatbotPageController;
+use App\Http\Controllers\Api\ChatbotController;
 
 // Home user
 Route::get('/', [AuthPageController::class, 'home'])->name('home');
@@ -79,7 +80,4 @@ Route::get('admin/feedbacks', [AdminFeedbackPageController::class, 'index'])->na
 Route::delete('/feedbacks/{id}', [AdminFeedbackPageController::class, 'destroy'])->name('admin.destroy');
 
 // Chatbot
-use App\Http\Controllers\Api\ChatbotController;
-
 Route::get('/chatbot', [ChatbotPageController::class, 'index']);
-Route::post('/chatbot', [ChatbotController::class, 'chat']);

@@ -46,6 +46,12 @@
         <div class="register-container mx-auto mt-5">
             <h3 class="text-center mb-4" style="color:#4b4b32;">Tạo tài khoản mới</h3>
 
+                @if (session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
